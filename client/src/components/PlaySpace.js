@@ -26,9 +26,17 @@ const PlaySpace = () => {
               image: imageObj,
               width: 250, 
               height: 350,
-              draggable: true, 
+              draggable: true,
+              offset: {
+                x : 125,
+                y : 175
+              }
             });
         
+        konvaImage.on('click', function() {
+          console.log("double click");
+          konvaImage.rotate(90);
+        })
       
         layer.add(konvaImage);
         layer.draw(); // Render the layer
