@@ -3,6 +3,7 @@ To unlock security issues bc reinstall, put in each terminal (WARNING, might be 
     Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope Process
 
 First Terminal in home:
+
     npm start
 
 Second Terminal:
