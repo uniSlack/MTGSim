@@ -1,10 +1,23 @@
-import React, { useEffect, useRef } from "react";
+import React, { useContext ,useEffect, useRef } from "react";
 import Konva from "konva";
+import SocketContext from "./SocketContext.js";
 
 import Card from "./Card.js";
 
 const PlaySpace = () => {
     const containerRef = useRef(null);
+    const socket = useContext(SocketContext);
+    
+    const cardDragged = React.useCallback(() => {
+        if(socket){
+            socket.emit("card-dragged", { message: "Hello, server!" });
+            console.log("sentmessage");
+        }
+        else{
+            console.log("No Socket");
+            return;
+        }
+    }, [socket]);
 
     useEffect(() => {
         var width = window.innerWidth;
@@ -26,12 +39,13 @@ const PlaySpace = () => {
             y: 175,
             imageUrl: "http://localhost:3001/images/MTGCardBack.jpg",
             name: "Magic Card",
+            sendDragUpdate: cardDragged,
         });
 
         // Add the card to the layer
         firstCard.attachToLayer(layer);
         layer.draw(); // Render the layer
-    }, []);
+    }, [cardDragged]);
 
     return (
         <div
