@@ -1,8 +1,9 @@
 import Konva from "konva";
 
 class Card {
-    constructor({ x = 0, y = 0, width = 250, height = 350, imageUrl, draggable = true, name = "Unnamed Card", sendDragUpdate, sendTappedUpdate}) {
+    constructor({ x = 0, y = 0, width = 250, height = 350, imageUrl, draggable = true, name = "Unnamed Card", ID, sendDragUpdate, sendTappedUpdate}) {
         this.name = name; // Additional data for the card
+        this.ID = ID;
         this.x = x;
         this.y = y;
         this.width = width;
@@ -43,11 +44,11 @@ class Card {
     // Example method to handle double-click
     handleDoubleClick() {
         this.setTapped(!this.tapped);
-        this.sendTappedUpdate( {cardID: 0, tapped: this.tapped} )
+        this.sendTappedUpdate( {cardID: this.ID, tapped: this.tapped} )
     }
 
     handleDragEnd() {
-        this.sendDragUpdate( { cardID: 0, newx:this.image.attrs.x, newy:this.image.attrs.y } );
+        this.sendDragUpdate( { cardID: this.ID, newx:this.image.attrs.x, newy:this.image.attrs.y } );
     }
 
     attachToLayer(layer) {
