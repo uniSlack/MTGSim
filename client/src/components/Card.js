@@ -1,7 +1,7 @@
 import Konva from "konva";
 
 class Card {
-    constructor({ x = 0, y = 0, width = 250, height = 350, imageUrl, draggable = true, name = "Unnamed Card", sendDragUpdate, recieveDragUpdate}) {
+    constructor({ x = 0, y = 0, width = 250, height = 350, imageUrl, draggable = true, name = "Unnamed Card", sendDragUpdate, sendTappedUpdate}) {
         this.name = name; // Additional data for the card
         this.x = x;
         this.y = y;
@@ -11,7 +11,7 @@ class Card {
         this.imageUrl = imageUrl;
         this.tapped = false;
         this.sendDragUpdate = sendDragUpdate;
-        this.recieveDragUpdate = recieveDragUpdate;
+        this.sendTappedUpdate = sendTappedUpdate;
 
         // Create the Konva.Image instance
         this.image = new Konva.Image({
@@ -37,23 +37,14 @@ class Card {
 
         // Add card-specific interactions
         this.image.on("dblclick", this.handleDoubleClick.bind(this));
-        // this.image.on("dragstart", this.handleDragStart.bind(this));
         this.image.on("dragend", this.handleDragEnd.bind(this));
     }
 
     // Example method to handle double-click
     handleDoubleClick() {
-        this.tapped = !this.tapped;
-        const rotation = this.tapped ? 90 : 0;
-        this.image.rotation(rotation);
-        this.image.getLayer()?.batchDraw(); // Redraw the layer
-        console.log("Card Tapped");
+        this.setTapped(!this.tapped);
+        this.sendTappedUpdate( {cardID: 0, tapped: this.tapped} )
     }
-
-    // handleDragStart() {
-    //     this.oldx = this.image.attrs.x;
-    //     this.oldy = this.image.attrs.y;
-    // }
 
     handleDragEnd() {
         this.sendDragUpdate( { cardID: 0, newx:this.image.attrs.x, newy:this.image.attrs.y } );
@@ -70,9 +61,12 @@ class Card {
         this.image.getLayer()?.batchDraw(); // Redraw the layer
     }
 
-    // getPosition() {
-    //   return { x: this.image.attrs.x(), y: this.image.attrs.y() };
-    // }
+    setTapped(isTapped) {
+        this.tapped = isTapped;
+        const rotation = this.tapped ? 90 : 0;
+        this.image.rotation(rotation);
+        this.image.getLayer()?.batchDraw(); // Redraw the layer
+    }
 }
 
 export default Card;

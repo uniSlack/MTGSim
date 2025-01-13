@@ -13,27 +13,35 @@ const PlaySpace = () => {
         if(!socket){ return;}
 
         // Listen for updates from other clients
-        socket.on("update-stage", (data) => {           
-            const {cardID, newx, newy} = data.cardDraggedData;
+        socket.on("card-dragged-update", (cardDraggedData) => {           
+            const {cardID, newx, newy} = cardDraggedData;
 
             if(cards[cardID]){
                 cards[cardID].setPosition(newx, newy);
             }
         });
+
+        socket.on("card-tapped-update", (cardTappedData) => {
+            const {cardID, tapped} = cardTappedData;
+
+            if(cards[cardID]){
+                cards[cardID].setTapped(tapped);
+            }
+        })
                 
         return () => {
-            socket.off("update-stage");
+            socket.off("card-dragged-update");
         };
     }, [socket, cards]);
 
     const cardDragged = React.useCallback((cardDraggedData) => {
-        if(socket){
-            socket.emit("card-dragged", { cardDraggedData });
-        }
-        else{
-            console.log("No Socket");
-            return;
-        }
+        if(!socket) {return}
+        socket.emit("card-dragged", cardDraggedData);
+    }, [socket]);
+
+    const cardTapped = React.useCallback((cardTappedData) => {
+        if(!socket) {return}
+        socket.emit("card-tapped", cardTappedData)
     }, [socket]);
 
     useEffect(() => {
@@ -57,6 +65,7 @@ const PlaySpace = () => {
             imageUrl: "http://localhost:3001/images/MTGCardBack.jpg",
             name: "Magic Card",
             sendDragUpdate: cardDragged,
+            sendTappedUpdate: cardTapped,
         });
 
         // Add the card to the layer
@@ -64,7 +73,7 @@ const PlaySpace = () => {
         layer.draw(); // Render the layer
 
         setCards((prevCards) => ({ ...prevCards, 0: firstCard }));
-    }, [cardDragged]);
+    }, [cardDragged, cardTapped]);
 
     return (
         <div
