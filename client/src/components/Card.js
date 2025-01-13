@@ -1,7 +1,7 @@
 import Konva from "konva";
 
 class Card {
-    constructor({ x = 0, y = 0, width = 250, height = 350, imageUrl, draggable = true, name = "Unnamed Card", sendDragUpdate}) {
+    constructor({ x = 0, y = 0, width = 250, height = 350, imageUrl, draggable = true, name = "Unnamed Card", sendDragUpdate, recieveDragUpdate}) {
         this.name = name; // Additional data for the card
         this.x = x;
         this.y = y;
@@ -11,6 +11,7 @@ class Card {
         this.imageUrl = imageUrl;
         this.tapped = false;
         this.sendDragUpdate = sendDragUpdate;
+        this.recieveDragUpdate = recieveDragUpdate;
 
         // Create the Konva.Image instance
         this.image = new Konva.Image({
@@ -25,9 +26,6 @@ class Card {
             },
         });
 
-        this.oldx = this.x;
-        this.oldy = this.y;
-
         // Load the image and apply it to the Konva.Image
         const imageObj = new window.Image();
         imageObj.src = this.imageUrl;
@@ -39,6 +37,7 @@ class Card {
 
         // Add card-specific interactions
         this.image.on("dblclick", this.handleDoubleClick.bind(this));
+        // this.image.on("dragstart", this.handleDragStart.bind(this));
         this.image.on("dragend", this.handleDragEnd.bind(this));
     }
 
@@ -51,29 +50,29 @@ class Card {
         console.log("Card Tapped");
     }
 
+    // handleDragStart() {
+    //     this.oldx = this.image.attrs.x;
+    //     this.oldy = this.image.attrs.y;
+    // }
+
     handleDragEnd() {
-        // const data = { cardID: 0, oldx: this.oldx, oldy:this.oldy, newx:this.x, newy:this.y };
-
-        // this.oldx = this.x;
-        // this.oldy = this.y;
-
-        console.log("Card Dragged");
-        this.sendDragUpdate();
+        this.sendDragUpdate( { cardID: 0, newx:this.image.attrs.x, newy:this.image.attrs.y } );
     }
-
-    // // Additional methods to interact with the card
-    // setPosition(x, y) {
-    //   this.image.x(x);
-    //   this.image.y(y);
-    // }
-
-    // getPosition() {
-    //   return { x: this.image.x(), y: this.image.y() };
-    // }
 
     attachToLayer(layer) {
         layer.add(this.image);
     }
+
+    // Additional methods to interact with the card
+    setPosition(x, y) {
+        this.image.setX(x);
+        this.image.setY(y);
+        this.image.getLayer()?.batchDraw(); // Redraw the layer
+    }
+
+    // getPosition() {
+    //   return { x: this.image.attrs.x(), y: this.image.attrs.y() };
+    // }
 }
 
 export default Card;

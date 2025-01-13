@@ -7,11 +7,28 @@ import Card from "./Card.js";
 const PlaySpace = () => {
     const containerRef = useRef(null);
     const socket = useContext(SocketContext);
+    const [cards, setCards] = React.useState({});
     
-    const cardDragged = React.useCallback(() => {
+    React.useEffect(() => {
+        if(!socket){ return;}
+
+        // Listen for updates from other clients
+        socket.on("update-stage", (data) => {           
+            const {cardID, newx, newy} = data.cardDraggedData;
+
+            if(cards[cardID]){
+                cards[cardID].setPosition(newx, newy);
+            }
+        });
+                
+        return () => {
+            socket.off("update-stage");
+        };
+    }, [socket, cards]);
+
+    const cardDragged = React.useCallback((cardDraggedData) => {
         if(socket){
-            socket.emit("card-dragged", { message: "Hello, server!" });
-            console.log("sentmessage");
+            socket.emit("card-dragged", { cardDraggedData });
         }
         else{
             console.log("No Socket");
@@ -45,6 +62,8 @@ const PlaySpace = () => {
         // Add the card to the layer
         firstCard.attachToLayer(layer);
         layer.draw(); // Render the layer
+
+        setCards((prevCards) => ({ ...prevCards, 0: firstCard }));
     }, [cardDragged]);
 
     return (

@@ -24,12 +24,7 @@ function App() {
         });
 
         setSocket(newSocket);
-
-         // Listen for updates from other clients
-        newSocket.on('update-stage', (data) => {
-            console.log('Received stage update:', data);
-            // Update the Konva stage state accordingly
-        })
+         
 
         return () => {
             newSocket.close(); 

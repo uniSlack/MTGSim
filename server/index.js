@@ -36,7 +36,7 @@ io.on("connection", (socket) => {
 
   // // Broadcast changes to other clients
   socket.on("card-dragged", (data) => {
-    console.log("card-dragged recieved");
+    // console.log("card-dragged recieved", data);
     socket.broadcast.emit("update-stage", data);
   });
 
