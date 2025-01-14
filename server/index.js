@@ -4,6 +4,48 @@ const cors = require("cors");
 const http = require('http');
 const { Server } = require("socket.io");
 
+const fs = require("fs");
+const JSONStream = require("JSONStream");
+
+const search = async (searchCriteria) => {
+    return new Promise((resolve, reject) => {
+        const results = [];
+
+        const stream = fs.createReadStream("oracle-cards-20250114100205.json")
+          .pipe(JSONStream.parse("*"));
+
+        stream.on("data", (data) => {
+            if( matchesCriteria(data, searchCriteria)) {
+              foundObject = data;
+              // stream.destroy();
+            }
+          })
+          .on("end", () => {
+            resolve(foundObject);
+          })
+          .on("error", (err) => {
+            reject(err);
+          });
+    });
+};
+
+const matchesCriteria = (data, criteria) => {
+  return Object.keys(criteria).every((key) => data[key] === criteria[key]);
+};
+
+search({object: "card", id: "86bf43b1-8d4e-4759-bb2d-0b2e03ba7012"})
+  .then((result) => {
+    if (result) {
+      console.log("Object found:", result.name);
+    }
+    else {
+      console.log("Object not found");
+    }
+  })
+  .catch((err) => {
+    console.log("Error seraching JSON:", err);
+  });
+
 const PORT = process.env.PORT || 3001;
 
 const app = express();
