@@ -43,6 +43,10 @@ io.on("connection", (socket) => {
     socket.broadcast.emit("card-tapped-update", data);
   });
 
+  socket.on("card-created", (data) => {
+    socket.broadcast.emit("card-created-update", data);
+  });
+
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id);
   });

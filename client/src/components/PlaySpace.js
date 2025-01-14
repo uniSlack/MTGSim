@@ -10,8 +10,56 @@ const PlaySpace = () => {
     const [cards, setCards] = useState({});
     const [cardCounter, setCardCounter] = useState(0);
     const [stage, setStage] = useState(null); 
-    const tempCardImages = ["http://localhost:3001/images/MTGCardBack.jpg",  "http://localhost:3001/images/atraxa-praetors-voice.png"];
     
+    
+    const cardDragged = useCallback((cardDraggedData) => {
+        if(!socket) {return}
+        socket.emit("card-dragged", cardDraggedData);
+    }, [socket]);
+
+    const cardTapped = useCallback((cardTappedData) => {
+        if(!socket) {return}
+        socket.emit("card-tapped", cardTappedData)
+    }, [socket]);
+
+
+    const createCard = useCallback((eventData, isCaughtNetworkEvent, cardData) => {
+        if (!stage) return;
+
+        const tempCardImages = ["http://localhost:3001/images/MTGCardBack.jpg",  "http://localhost:3001/images/atraxa-praetors-voice.png"];
+
+        const layer = stage.findOne("Layer");
+        const newCardID = cardCounter;
+        if(!cardData){
+            cardData = {
+                ID: newCardID,
+                x: 500,
+                y: 500,
+                imageUrl: tempCardImages[newCardID],
+                name: `Magic Card #${newCardID}`,
+            };
+        }
+
+        const newCard = new Card({
+            ...cardData,
+            sendDragUpdate: cardDragged,
+            sendTappedUpdate: cardTapped, 
+        });       
+        
+        // Attach the card to the layer and redraw
+        newCard.attachToLayer(layer);
+        layer.draw();
+
+        // Add the new card to the state
+        setCards((prevCards) => ({ ...prevCards, [newCardID]: newCard }));
+        setCardCounter((prevCounter) => prevCounter + 1); 
+
+        if(socket && !isCaughtNetworkEvent){
+            socket.emit("card-created", cardData);
+        }
+    }, [stage, cardCounter, cardDragged, cardTapped, socket]);
+
+
     useEffect(() => {
         if(!socket){ return;}
 
@@ -31,46 +79,17 @@ const PlaySpace = () => {
                 cards[cardID].setTapped(tapped);
             }
         })
+                    
+        socket.on("card-created-update", (cardCreatedData) =>{
+            createCard(null, true, cardCreatedData);
+        });
                 
         return () => {
             socket.off("card-dragged-update");
             socket.off("card-tapped-update");
+            socket.off("card-created-update");
         };
-    }, [socket, cards]);
-
-    const cardDragged = useCallback((cardDraggedData) => {
-        if(!socket) {return}
-        socket.emit("card-dragged", cardDraggedData);
-    }, [socket]);
-
-    const cardTapped = useCallback((cardTappedData) => {
-        if(!socket) {return}
-        socket.emit("card-tapped", cardTappedData)
-    }, [socket]);
-
-    const createCard = () => {
-        if (!stage) return;
-
-        const layer = stage.findOne("Layer");
-        const newCardID = cardCounter;
-        const newCard = new Card({
-            ID: newCardID,
-            x:500,
-            y:500,
-            imageUrl: tempCardImages[newCardID],
-            name: `Magic Card #${newCardID}`,
-            sendDragUpdate: cardDragged,
-            sendTappedUpdate: cardTapped, 
-        });       
-        
-        // Attach the card to the layer and redraw
-        newCard.attachToLayer(layer);
-        layer.draw();
-
-        // Add the new card to the state
-        setCards((prevCards) => ({ ...prevCards, [newCardID]: newCard }));
-        setCardCounter((prevCounter) => prevCounter + 1); 
-    };
+    }, [socket, cards, createCard]);
 
     useEffect(() => {
         var width = window.innerWidth;
