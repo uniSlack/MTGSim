@@ -1,5 +1,9 @@
-Created in VSCode. Make sure you have node.js installed: https://nodejs.org/en/download. 
+Created in VSCode.
+
+Make sure you have node.js installed: https://nodejs.org/en/download. 
+
 Download "Oracle Cards" database from scryfall and put it in the same directory as your Server and Client folders: https://scryfall.com/docs/api/bulk-data
+
 First time running, copy paste the code from databaseImport.js to the top of index.js and change the DataBaseName variable to the name of your database. Remove the code afterward.
 
 First Terminal in home:
