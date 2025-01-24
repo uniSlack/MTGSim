@@ -10,6 +10,7 @@ const PlaySpace = () => {
     const [cards, setCards] = useState({});
     const [cardCounter, setCardCounter] = useState(0);
     const [stage, setStage] = useState(null); 
+    const [cardSearchBoxText, setCardSearchBoxText] = useState("");
     
     
     const cardDragged = useCallback((cardDraggedData) => {
@@ -23,25 +24,18 @@ const PlaySpace = () => {
     }, [socket]);
 
 
-    const createCard = useCallback((eventData, isCaughtNetworkEvent, cardData) => {
+    const createCard = useCallback((cardData) => {
         if (!stage) return;
-
-        const tempCardImages = ["http://localhost:3001/images/MTGCardBack.jpg",  "http://localhost:3001/images/atraxa-praetors-voice.png"];
 
         const layer = stage.findOne("Layer");
         const newCardID = cardCounter;
-        if(!cardData){
-            cardData = {
-                ID: newCardID,
-                x: 500,
-                y: 500,
-                imageUrl: tempCardImages[newCardID],
-                name: `Magic Card #${newCardID}`,
-            };
-        }
 
         const newCard = new Card({
-            ...cardData,
+            ID: newCardID,
+            x: 500,
+            y: 500,
+            imageUrl: cardData.image_uris.png ? cardData.image_uris.png : "http://localhost:3001/images/MTGCardBack.jpg",
+            name: cardData.name ? cardData.name : `Magic Card #${newCardID}`,
             sendDragUpdate: cardDragged,
             sendTappedUpdate: cardTapped, 
         });       
@@ -54,10 +48,7 @@ const PlaySpace = () => {
         setCards((prevCards) => ({ ...prevCards, [newCardID]: newCard }));
         setCardCounter((prevCounter) => prevCounter + 1); 
 
-        if(socket && !isCaughtNetworkEvent){
-            socket.emit("card-created", cardData);
-        }
-    }, [stage, cardCounter, cardDragged, cardTapped, socket]);
+    }, [stage, cardCounter, cardDragged, cardTapped]);
 
 
     useEffect(() => {
@@ -81,7 +72,7 @@ const PlaySpace = () => {
         })
                     
         socket.on("card-created-update", (cardCreatedData) =>{
-            createCard(null, true, cardCreatedData);
+            createCard(cardCreatedData);
         });
                 
         return () => {
@@ -108,6 +99,20 @@ const PlaySpace = () => {
         setStage(newStage);
     }, []);
 
+    const handleCardSearchBoxTextChange = (event) => {
+        setCardSearchBoxText(event.target.value);
+    }
+
+    const SearchCard = useCallback(() => {
+        socket.emit("card-search", cardSearchBoxText);
+    }, [socket, cardSearchBoxText]);
+
+    const handleKeyDown = (event) => {
+        if (event.key === "Enter") {
+            SearchCard();
+        }
+      };
+
     return (
         <div>
             <div
@@ -116,7 +121,14 @@ const PlaySpace = () => {
                 border: "1px solid black", // Optional: To visualize the container
             }}
             ></div>
-            <button onClick={createCard} style={{ marginTop: "10px" }}>
+            <input
+                type="text"
+                value={cardSearchBoxText}
+                onChange={handleCardSearchBoxTextChange}
+                onKeyDown={handleKeyDown}
+                placeholder="Search Card"
+            />
+            <button onClick={SearchCard} style={{ marginTop: "10px" }}>
                 Add Card
             </button>
         </div>

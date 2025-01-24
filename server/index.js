@@ -10,22 +10,21 @@ const PORT = process.env.PORT || 3001;
 const mongoUri = "mongodb://localhost:27017";
 const mongoClient = new MongoClient(mongoUri);
 
-async function run() {
+async function SearchDatabase(cardName) {
   try {
     await mongoClient.connect();
-    console.log("Connected to MongoDB!");
     const db = mongoClient.db("testDB");
     const collection = db.collection("testCollection");
-    const result = await collection.findOne({
-      name: "Mana Tithe"
+    return await collection.findOne({
+      name: cardName
     });
-    console.log(result.image_uris.png);
-  } finally {
+  } catch (error) {
+    console.error("Database error:", error);
+  }
+  finally {
     await mongoClient.close();
   }
 }
-
-run().catch(console.dir);
 
 const app = express();
 const server = http.createServer(app);
@@ -66,6 +65,18 @@ io.on("connection", (socket) => {
 
   socket.on("card-created", (data) => {
     socket.broadcast.emit("card-created-update", data);
+  });
+
+  socket.on("card-search", (data) => {
+    SearchDatabase(data)
+      .catch(console.dir)
+      .then(result => {
+        if(result){
+          io.emit("card-created-update", result);
+        } else {
+          console.log("Card not found:", data);
+        }
+      });
   });
 
   socket.on("disconnect", () => {

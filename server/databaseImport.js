@@ -1,6 +1,9 @@
 const { MongoClient } = require('mongodb');
 const fs = require('fs');
 
+// CHANGE THIS TO YOUR DB
+const DataBaseName = "oracle-cards-20250114100205.json";
+
 const uri = "mongodb://localhost:27017";
 const client = new MongoClient(uri);
 
@@ -12,7 +15,7 @@ async function importData() {
     const db = client.db("testDB");
     const collection = db.collection("testCollection");
 
-    const data = JSON.parse(fs.readFileSync("oracle-cards-20250114100205.json", "utf-8"));
+    const data = JSON.parse(fs.readFileSync(DataBaseName, "utf-8"));
     const result = await collection.insertMany(data);
 
     console.log(`${result.insertedCount} documents inserted!`);
