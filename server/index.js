@@ -62,6 +62,14 @@ io.on("connection", (socket) => {
   socket.on("card-tapped", (data) => {
     socket.broadcast.emit("card-tapped-update", data);
   });
+  
+  socket.on("card-shown", (data) => {
+    socket.broadcast.emit("card-shown-update", data);
+  });
+  
+  socket.on("card-hidden", (data) => {
+    socket.broadcast.emit("card-hidden-update", data);
+  });
 
   socket.on("card-created", (data) => {
     socket.broadcast.emit("card-created-update", data);

@@ -22,6 +22,16 @@ const PlaySpace = () => {
         if(!socket) {return}
         socket.emit("card-tapped", cardTappedData)
     }, [socket]);
+    
+    const cardShown = useCallback((cardShownData) => {
+        if(!socket) {return}
+        socket.emit("card-shown", cardShownData)
+    }, [socket]);
+    
+    const cardHidden = useCallback((cardHiddenData) => {
+        if(!socket) {return}
+        socket.emit("card-hidden", cardHiddenData)
+    }, [socket]);
 
 
     const createCard = useCallback((cardData) => {
@@ -84,11 +94,21 @@ const PlaySpace = () => {
         socket.on("card-created-update", (cardCreatedData) =>{
             createCard(cardCreatedData);
         });
+
+        socket.on("card-shown-update", (cardShownData) => {
+            populateBoardWithCard(cardShownData);
+        });
+
+        socket.on("card-hidden-update", (cardHiddenData) => {
+            removeCardFromBoard(cardHiddenData);
+        });
                 
         return () => {
             socket.off("card-dragged-update");
             socket.off("card-tapped-update");
             socket.off("card-created-update");
+            socket.off("card-shown-update");
+            socket.off("card-hidden-update");
         };
     }, [socket, cards, createCard]);
 
@@ -126,9 +146,11 @@ const PlaySpace = () => {
     const HandleCardListItemClicked = (selectedCardID) => {
         if (cards[selectedCardID].attached == false){
             populateBoardWithCard(selectedCardID);
+            cardShown(selectedCardID);
         }
         else{
             removeCardFromBoard(selectedCardID);
+            cardHidden(selectedCardID);
         }
     };
 
@@ -150,7 +172,7 @@ const PlaySpace = () => {
                 <div style={{flex: 3}}>
                     <ul>
                         {Object.values(cards).map((card) => (
-                            <li key={card.ID} onClick={() => HandleCardListItemClicked(card.ID)}>
+                            <li name={card.ID} key={card.ID} onClick={() => HandleCardListItemClicked(card.ID)}>
                                 {card.name}
                             </li>
                         ))}

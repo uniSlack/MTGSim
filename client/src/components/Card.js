@@ -54,18 +54,13 @@ class Card {
     }
 
     attachToLayer(layer) {
-        if (!this.loaded){
-            layer.add(this.image);
-            this.loaded = true;
-        } else {
-            layer.show(this.image);
-        }
+        layer.add(this.image);
         layer.batchDraw();
         this.attached = true;
     }
 
     detachFromLayer(layer) {
-        layer.hide(this.image);
+        this.image.remove()
         layer.batchDraw();
         this.attached = false;
     }
