@@ -11,6 +11,8 @@ class Card {
         this.draggable = draggable;
         this.imageUrl = imageUrl;
         this.tapped = false;
+        this.attached = false;
+        this.loaded = false;
         this.sendDragUpdate = sendDragUpdate;
         this.sendTappedUpdate = sendTappedUpdate;
 
@@ -52,7 +54,20 @@ class Card {
     }
 
     attachToLayer(layer) {
-        layer.add(this.image);
+        if (!this.loaded){
+            layer.add(this.image);
+            this.loaded = true;
+        } else {
+            layer.show(this.image);
+        }
+        layer.batchDraw();
+        this.attached = true;
+    }
+
+    detachFromLayer(layer) {
+        layer.hide(this.image);
+        layer.batchDraw();
+        this.attached = false;
     }
 
     // Additional methods to interact with the card

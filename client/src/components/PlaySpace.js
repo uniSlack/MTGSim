@@ -53,6 +53,14 @@ const PlaySpace = () => {
         layer.draw(); 
     }, [cards]);
 
+    const removeCardFromBoard = useCallback((selectedCardID) => {
+        if (!stage) return;
+
+        const layer = stage.findOne("Layer");
+
+        cards[selectedCardID].detachFromLayer(layer);
+    }, [cards]);
+
     useEffect(() => {
         if(!socket){ return;}
 
@@ -113,7 +121,16 @@ const PlaySpace = () => {
         if (event.key === "Enter") {
             SearchCard();
         }
-      };
+    };
+
+    const HandleCardListItemClicked = (selectedCardID) => {
+        if (cards[selectedCardID].attached == false){
+            populateBoardWithCard(selectedCardID);
+        }
+        else{
+            removeCardFromBoard(selectedCardID);
+        }
+    };
 
     return (
         <div>
@@ -133,7 +150,7 @@ const PlaySpace = () => {
                 <div style={{flex: 3}}>
                     <ul>
                         {Object.values(cards).map((card) => (
-                            <li key={card.ID} onClick={() => populateBoardWithCard(card.ID)}>
+                            <li key={card.ID} onClick={() => HandleCardListItemClicked(card.ID)}>
                                 {card.name}
                             </li>
                         ))}
