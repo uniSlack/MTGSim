@@ -3,8 +3,28 @@ const path = require("path");
 const cors = require("cors");
 const http = require('http');
 const { Server } = require("socket.io");
+const { MongoClient } = require('mongodb');
 
 const PORT = process.env.PORT || 3001;
+
+const mongoUri = "mongodb://localhost:27017";
+const mongoClient = new MongoClient(mongoUri);
+
+async function SearchDatabase(cardName) {
+  try {
+    await mongoClient.connect();
+    const db = mongoClient.db("testDB");
+    const collection = db.collection("testCollection");
+    return await collection.findOne({
+      name: cardName
+    });
+  } catch (error) {
+    console.error("Database error:", error);
+  }
+  finally {
+    await mongoClient.close();
+  }
+}
 
 const app = express();
 const server = http.createServer(app);
@@ -41,6 +61,22 @@ io.on("connection", (socket) => {
 
   socket.on("card-tapped", (data) => {
     socket.broadcast.emit("card-tapped-update", data);
+  });
+
+  socket.on("card-created", (data) => {
+    socket.broadcast.emit("card-created-update", data);
+  });
+
+  socket.on("card-search", (data) => {
+    SearchDatabase(data)
+      .catch(console.dir)
+      .then(result => {
+        if(result){
+          io.emit("card-created-update", result);
+        } else {
+          console.log("Card not found:", data);
+        }
+      });
   });
 
   socket.on("disconnect", () => {
