@@ -25,9 +25,6 @@ const PlaySpace = () => {
 
 
     const createCard = useCallback((cardData) => {
-        if (!stage) return;
-
-        const layer = stage.findOne("Layer");
         const newCardID = cardCounter;
 
         const newCard = new Card({
@@ -39,10 +36,6 @@ const PlaySpace = () => {
             sendDragUpdate: cardDragged,
             sendTappedUpdate: cardTapped, 
         });       
-        
-        // Attach the card to the layer and redraw
-        newCard.attachToLayer(layer);
-        layer.draw();
 
         // Add the new card to the state
         setCards((prevCards) => ({ ...prevCards, [newCardID]: newCard }));
@@ -50,6 +43,15 @@ const PlaySpace = () => {
 
     }, [stage, cardCounter, cardDragged, cardTapped]);
 
+    const populateBoardWithCard = useCallback((selectedCardID) => {
+        if (!stage) return;
+
+        const layer = stage.findOne("Layer");
+
+        // Attach the card to the layer and redraw
+        cards[selectedCardID].attachToLayer(layer); //working here
+        layer.draw(); 
+    }, [cards]);
 
     useEffect(() => {
         if(!socket){ return;}
@@ -115,22 +117,36 @@ const PlaySpace = () => {
 
     return (
         <div>
+            <div style={{ display: 'flex'}}>
+                <div style={{flex: 1}}>
+                    <input
+                        type="text"
+                        value={cardSearchBoxText}
+                        onChange={handleCardSearchBoxTextChange}
+                        onKeyDown={handleKeyDown}
+                        placeholder="Search Card"
+                    />
+                    <button onClick={SearchCard} style={{ marginTop: "10px" }}>
+                        Add Card
+                    </button>
+                </div>
+                <div style={{flex: 3}}>
+                    <ul>
+                        {Object.values(cards).map((card) => (
+                            <li key={card.ID} onClick={() => populateBoardWithCard(card.ID)}>
+                                {card.name}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            </div>
+    
             <div
             ref={containerRef} // This div serves as the container
             style={{
                 border: "1px solid black", // Optional: To visualize the container
             }}
             ></div>
-            <input
-                type="text"
-                value={cardSearchBoxText}
-                onChange={handleCardSearchBoxTextChange}
-                onKeyDown={handleKeyDown}
-                placeholder="Search Card"
-            />
-            <button onClick={SearchCard} style={{ marginTop: "10px" }}>
-                Add Card
-            </button>
         </div>
     )
 }
